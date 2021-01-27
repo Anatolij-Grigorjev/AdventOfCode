@@ -1,14 +1,21 @@
+#OSX specific
+.DS_Store
+#artifacts
 pom.xml
+pom.properties
 pom.xml.asc
 *.jar
 *.class
-/lib/
-/classes/
-/target/
-/checkouts/
+lib/
+classes/
+target/
+checkouts/
 .lein-deps-sum
 .lein-repl-history
 .lein-plugins/
 .lein-failures
 .nrepl-port
 .cpcache/
+.calva/
+.clj-kondo/
+.lsp/
