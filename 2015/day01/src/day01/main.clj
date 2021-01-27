@@ -8,11 +8,12 @@
 
 (defn read-input [path] (slurp path))
 
-(defn apply-symbol [acc symbol]
+(defn apply-symbol [acc idx symbol]
+  (if (= acc -1) (println "Basement position: " idx))
   ((get symbol-map symbol identity) acc))
 
 (defn reduce-symbols [symbols]
-  (reduce apply-symbol 0 symbols))
+  (reduce-kv apply-symbol 0 (apply vector (map char symbols))))
 
 
 (defn -main [& args]
