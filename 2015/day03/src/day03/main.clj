@@ -15,10 +15,6 @@
 (defn moves-between-houses [all-directions]
   (into #{} (reductions move-pos [0 0] all-directions)))
 
-(defn filter-idx [idx-pred seq]
-  (let [indexed-seq (zipmap (range) seq)]
-    (map second (filter #(idx-pred (first %)) indexed-seq))))
-
 (defn odds [seq]
   (take-nth 2 seq))
 
