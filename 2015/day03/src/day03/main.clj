@@ -2,31 +2,27 @@
 
 (defn read-input [path] (slurp path))
 
-(def opposite-dir {\< \>
-                   \> \<
-                   \v \^
-                   \^ \v})
+; solution taken from https://github.com/derekslager
 
-(defn move-between-houses [all-directions]
-  
-  (loop [ 
-         total 1
-         current-house {}
-         directions all-directions]
-    (let [next-direction (first directions)
-        next-house (get current-house next-direction)]
-    (if (nil? next-direction)
-      total
-      (if (nil? next-house)
-        (recur 
-         (inc total)
-         (get (assoc current-house next-direction {(get opposite-dir next-direction) current-house}) next-direction)
-         (rest directions))
-        (recur total (get current-house next-direction) (rest directions)))))))
+(defn move-pos [[x y] direction]
+  (case direction
+    \^ [x (+ y 1)]
+    \v [x (- y 1)]
+    \> [(+ x 1) y]
+    \< [(- x 1) y]
+    [x y]))
 
+(defn moves-between-houses [all-directions]
+  (into #{} (reductions move-pos [0 0] all-directions)))
+
+
+(defn do-part-one [input]
+  (println "Part1 - houses visited: " (count (moves-between-houses input))))
 
 
 (defn -main [& args]
   (let [path (first args)]
     (println "Reading " path "...")
-    (println "houses visited: " (move-between-houses (read-input path)))))
+    (let [input (read-input path)]
+      (do-part-one input)
+      )))
