@@ -12,26 +12,53 @@
 (defn has-n-vowels? [word n vowels]
   (>= (count (filter (into #{} vowels) word)) n))
 
-(defn has-double-letter? [word]
+(defn has-letter-repeat-offset?
+  ([word] (has-letter-repeat-offset? word 1))
+  ([word offset]
+   (loop [letters word]
+     (let [letter1 (first letters)
+           letter2 (nth letters offset nil)]
+       (case (= letter1 letter2)
+         true true
+         false (if (nil? letter2)
+                 false
+                 (recur (rest letters))))))))
+
+
+(defn has-repeat-sequence? [word]
   (loop [letters word]
     (let [letter1 (first letters)
           letter2 (second letters)]
       (if (nil? letter2)
         false
-        (if (= letter1 letter2)
+        (if (str/includes? (apply str (drop 2 letters)) (str letter1 letter2))
           true
           (recur (rest letters)))))))
 
-(defn is-nice? [word]
+
+(defn is-nice-1? [word]
   (and
    (excludes-all? word naughty-strings)
    (has-n-vowels? word 3 vowels)
-   (has-double-letter? word)))
+   (has-letter-repeat-offset? word)))
+
+
+(defn is-nice-2? [word]
+  (and
+   (has-repeat-sequence? word)
+   (has-letter-repeat-offset? word 2)))
+
+
+
+(defn do-part [words-list niceness-pred]
+  (count (filter niceness-pred words-list)))
 
 
 (defn do-part-one [words-list]
-  (count (filter is-nice? words-list)))
+  (do-part words-list is-nice-1?))
 
+(defn do-part-two [words-list]
+  (do-part words-list is-nice-2?))
 
 (defn read-input [path]
   (with-open [reader (io/reader path)]
@@ -41,6 +68,7 @@
 (defn -main [& args]
   (let [path (first args)
         words-list (read-input path)]
-    (println "Reading " path "...")
+    (println "Parsed file at " path "...")
     (println "Num words total: " (count words-list))
-    (println "Num nice words: " (do-part-one words-list))))
+    (println "Num nice words day1: " (do-part-one words-list))
+    (println "Num nice words day2: " (do-part-two words-list))))
