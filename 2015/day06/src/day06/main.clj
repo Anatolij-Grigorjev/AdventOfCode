@@ -48,25 +48,37 @@
                y (y-range command)]
            {:command (:command command) :at [x y]})))
 
-(defn apply-command-light [command light]
+(defn flick-light [command light]
   (case command
     :on 1
     :off 0
     :toggle (mod (inc light) 2)))
 
-(defn command-light [grid command-position]
+(defn adjust-light [command light]
+  (case command
+    :on (inc light)
+    :off (max (dec light) 0)
+    :toggle (inc (inc light))))
+
+(defn command-light [light-transform grid command-position]
   (assoc-in 
    grid 
    (:at command-position) 
-   (apply-command-light 
+   (light-transform 
     (:command command-position) 
     (get-in grid (:at command-position)))))
 
-(defn apply-command [grid command]
-  (reduce command-light grid (command-positions command)))
+(def command-light-day01 (partial command-light flick-light))
+(def command-light-day02 (partial command-light adjust-light))
 
-(defn apply-commands [grid commands]
-  (reduce apply-command grid commands))
+(defn apply-command [light-commander grid command]
+  (reduce light-commander grid (command-positions command)))
+
+(def apply-command-day02 (partial apply-command command-light-day02))
+(def apply-command-day01 (partial apply-command command-light-day01))
+
+(defn apply-commands [applier grid commands]
+  (reduce applier grid commands))
 
 
 (defn count-on [grid]
@@ -77,4 +89,5 @@
         parsed-commands (read-input path)]
     (println "Parsed input at path " path)
     (println "Found total commands: " (count parsed-commands))
-    (println "Day01 turned on lights: " (count-on (apply-commands (off-grid 1000 1000) parsed-commands)))))
+    (println "Day01 turned on lights: " (count-on (apply-commands apply-command-day01 (off-grid 1000 1000) parsed-commands)))
+    (println "Day02 lights brightness: " (count-on (apply-commands apply-command-day02 (off-grid 1000 1000) parsed-commands)))))
