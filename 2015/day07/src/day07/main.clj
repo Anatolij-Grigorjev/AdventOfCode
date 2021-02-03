@@ -1,7 +1,57 @@
 (ns day07.main
-  (:require [clojure.java.io :as io]))
+  (:require [clojure.java.io :as io])
+  (:require [clojure.string :as str]))
 
-(defn parse-logic-command [line] {})
+(def OPS {:NOT bit-not
+          :OR bit-or
+          :AND bit-and
+          :LSHIFT bit-shift-left
+          :RSHIFT bit-shift-right
+          :ASSIGN identity})
+
+(defn parse-int [num-string]
+  (try
+    (Integer/parseInt num-string)
+    (catch Exception e nil)))
+
+(defn num-or-string [input]
+  (let [num (parse-int input)]
+    (if (nil? num) input num)))
+
+(defn find-first [f col]
+  (first (drop-while (complement f) col)))
+
+(defn parse-op [line]
+  (let [found-op-name (find-first #(.contains line (name %)) (keys OPS))]
+    (if (nil? found-op-name)
+      :ASSIGN
+      found-op-name)))
+
+(defn split-arrow [line]
+  (str/split line #" -> " 2))
+
+(defn parse-2-operands [line op]
+  (let [operands-line (first (split-arrow line))
+        operands (str/split operands-line (re-pattern (str " " (name op) " ")) 2)]
+    (apply vector (map num-or-string operands))))
+
+(defn parse-operands [line op]
+  (case op
+    :ASSIGN (vector (num-or-string (first (split-arrow line))))
+    :NOT (vector (.substring (first (split-arrow line)) (count "NOT ")))
+    (:OR :AND :LSHIFT :RSHIFT) (parse-2-operands line op)))
+
+(defn parse-target [line]
+  (second (split-arrow line)))
+
+(defn parse-logic-command [line]
+  (let [op (parse-op line)
+        operands (parse-operands line op)
+        target (parse-target line)]
+    {:op op
+     :operands operands
+     :target target}))
+
 
 (defn read-input [path]
   (with-open [reader (io/reader path)]
@@ -13,4 +63,5 @@
         commands (read-input path)]
     (println "Read commands from: " path)
     (println "Found total commands: " (count commands))
+    (doall (map println commands))
     (println "Day01 final signal wire a: ")))
