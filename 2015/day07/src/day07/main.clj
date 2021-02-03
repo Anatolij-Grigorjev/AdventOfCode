@@ -48,7 +48,7 @@
   (let [op (parse-op line)
         operands (parse-operands line op)
         target (parse-target line)]
-    {:op op
+    {:op (get OPS op)
      :operands operands
      :target target}))
 
@@ -57,11 +57,34 @@
   (with-open [reader (io/reader path)]
     (doall (map parse-logic-command (line-seq reader)))))
 
+(defn map-wiring [wiring]
+  { (:target wiring) { 
+                      :f (fn [operands] 
+                           (apply (:op wiring) operands)) 
+                      :operands (:operands wiring)
+                      }
+   })
+
+(defn func-grid [wirings]
+  (into {} (map map-wiring wirings)))
+
+
+(defn flush-wire [grid target]
+  (let [wire (get grid target)
+        wire-func (:f wire)
+        wire-operands (:operands wire)]
+    ;(println "Flusing wire |" target "| with operands: " wire-operands)
+    (wire-func (map (fn [operand]
+                     (if (number? operand)
+                       operand
+                       (flush-wire grid operand))) wire-operands))))
+
 
 (defn -main [& args]
   (let [path (first args)
         commands (read-input path)]
     (println "Read commands from: " path)
     (println "Found total commands: " (count commands))
-    (doall (map println commands))
-    (println "Day01 final signal wire a: ")))
+    (let [grid (func-grid commands)
+          signal-a (flush-wire grid "a")]
+      (println "Day01 final signal wire a: " signal-a))))
