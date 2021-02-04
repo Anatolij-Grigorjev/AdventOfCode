@@ -58,26 +58,52 @@
     (doall (map parse-logic-command (line-seq reader)))))
 
 (defn map-wiring [wiring]
-  { (:target wiring) { 
-                      :f (fn [operands] 
-                           (apply (:op wiring) operands)) 
-                      :operands (:operands wiring)
-                      }
-   })
+  {(:target wiring) {:f (fn [operands]
+                          (apply (:op wiring) operands))
+                     :operands (:operands wiring)}})
 
 (defn func-grid [wirings]
   (into {} (map map-wiring wirings)))
 
+(defn operands [wire]
+  (get-in wire [1 :operands]))
 
-(defn flush-wire [grid target]
-  (let [wire (get grid target)
-        wire-func (:f wire)
-        wire-operands (:operands wire)]
-    ;(println "Flusing wire |" target "| with operands: " wire-operands)
-    (wire-func (map (fn [operand]
-                     (if (number? operand)
-                       operand
-                       (flush-wire grid operand))) wire-operands))))
+(defn ops-numeric [wire]
+  (every? number? (operands wire)))
+
+(defn resolve-numeric [wire]
+  (let [target (first wire)
+        wire-func (:f (second wire))
+        wire-operands (operands wire)]
+    {target (wire-func wire-operands)}))
+
+(defn replaced-ops [operands replacements]
+  (apply vector (map #(get replacements % %) operands)))
+
+(defn wire-str [wire]
+  (str (first wire) "->" (operands wire)))
+
+(defn prune-resolved-grid [grid resolved-wires]
+  (let [resolved-wire-ids (into #{} (keys resolved-wires))
+        wires-with-operands (filter (fn [entry] 
+                                      (some resolved-wire-ids (operands entry))) grid)
+        stubbed-wires (map #(assoc-in % [1 :operands] (replaced-ops (operands %) resolved-wires)) wires-with-operands)]
+    (println "Wires with operands " resolved-wire-ids ": " (map wire-str wires-with-operands))
+    (println "Stubbed wires: " (map wire-str stubbed-wires))
+    (apply (partial dissoc (into grid stubbed-wires)) (keys resolved-wires))))
+
+(defn resolve-direct [grid]
+  (loop [unresolved-grid grid
+         all-resolved {}
+         iter 0]
+    (let [resolvable-wires (filter ops-numeric unresolved-grid)
+          new-resolved (map resolve-numeric resolvable-wires)
+          added-resolved (into all-resolved new-resolved)]
+      (println "pruned wires: " added-resolved)
+      (println "grid left: " (count unresolved-grid))
+      (if (empty? unresolved-grid)
+        added-resolved
+        (recur (prune-resolved-grid unresolved-grid added-resolved) added-resolved (inc iter))))))
 
 
 (defn -main [& args]
@@ -86,5 +112,5 @@
     (println "Read commands from: " path)
     (println "Found total commands: " (count commands))
     (let [grid (func-grid commands)
-          signal-a (flush-wire grid "a")]
-      (println "Day01 final signal wire a: " signal-a))))
+          resolved-grid (resolve-direct grid)]
+      (println "Day01 final signal wire a: " (get resolved-grid "a")))))
