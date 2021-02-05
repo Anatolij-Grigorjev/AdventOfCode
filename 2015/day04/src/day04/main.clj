@@ -1,4 +1,5 @@
-(ns day04.main)
+(ns day04.main
+  (:require [aoc-commons.core :refer :all]))
 
 (import java.security.MessageDigest)
 
@@ -21,9 +22,6 @@
 
 (defn form-input [num]
   (str input-key num))
-
-(defn find-first [f col]
-  (first (drop-while (complement f) col)))
 
 (defn key-inputs []
   (map form-input (range)))

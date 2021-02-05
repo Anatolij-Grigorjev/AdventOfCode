@@ -1,16 +1,12 @@
 (ns day02.main
-  (:require [clojure.java.io :as io])
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str])
+  (:require [aoc-commons.core :refer :all]))
 
 (defn dims2sides [dims]
   [(* (:w dims) (:l dims)) (* (:w dims) (:h dims)) (* (:h dims) (:l dims))])
 
 (defn parse-dim [text-line]
   (zipmap [:l :w :h] (map #(Integer/parseInt %) (str/split text-line #"x" 3))))
-
-(defn read-input [path]
-  (with-open [reader (io/reader path)]
-    (doall (map parse-dim (line-seq reader)))))
 
 ; ribbon
 (defn volume [dims]
@@ -49,7 +45,7 @@
 
 (defn -main [& args]
   (let [path (first args)
-        presents-dims (read-input path)]
+        presents-dims (read-input-lines parse-dim path)]
     (println "Reading " path "...")
     (println "Needed feet to wrap box: " (total-needed-feet-wrap presents-dims))
     (println "Needed feet for ribbon: " (total-needed-feet-ribbon presents-dims))))

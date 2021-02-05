@@ -1,5 +1,5 @@
 (ns day07.main
-  (:require [clojure.java.io :as io])
+  (:require [aoc-commons.core :refer :all])
   (:require [clojure.string :as str]))
 
 (def OPS {:NOT bit-not
@@ -9,17 +9,9 @@
           :RSHIFT bit-shift-right
           :ASSIGN identity})
 
-(defn parse-int [num-string]
-  (try
-    (Integer/parseInt num-string)
-    (catch Exception e nil)))
-
 (defn num-or-string [input]
   (let [num (parse-int input)]
     (if (nil? num) input num)))
-
-(defn find-first [f col]
-  (first (drop-while (complement f) col)))
 
 (defn parse-op [line]
   (let [found-op-name (find-first #(.contains line (name %)) (keys OPS))]
@@ -51,11 +43,6 @@
     {:op (get OPS op)
      :operands operands
      :target target}))
-
-
-(defn read-input [path]
-  (with-open [reader (io/reader path)]
-    (doall (map parse-logic-command (line-seq reader)))))
 
 (defn map-wiring [wiring]
   {(:target wiring) {:f (fn [operands]
@@ -108,7 +95,7 @@
 
 (defn -main [& args]
   (let [path (first args)
-        commands (read-input path)]
+        commands (read-input-lines parse-logic-command path)]
     (println "Read commands from: " path)
     (println "Found total commands: " (count commands))
     (let [grid (func-grid commands)

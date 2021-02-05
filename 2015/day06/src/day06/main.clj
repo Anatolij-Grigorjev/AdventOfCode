@@ -1,13 +1,10 @@
 (ns day06.main
-  (:require [clojure.java.io :as io])
+  (:require [aoc-commons.core :refer :all])
   (:require [clojure.string :as str]))
 
 (def lights-commands {"turn on " :on
                       "turn off " :off
                       "toggle " :toggle})
-
-(defn find-first [f col]
-  (first (drop-while (complement f) col)))
 
 (defn decode-pair [xy-csv-string]
   (let [xy (str/split xy-csv-string #"," 2)]
@@ -25,10 +22,6 @@
      :from (decode-pair (first coords))
      :to (decode-pair (second coords))
      }))
-
-(defn read-input [path]
-  (with-open [reader (io/reader path)]
-    (doall (map parse-lights-command (line-seq reader)))))
 
 (defn make-row [width value]
   (apply vector (take width (repeat value))))
@@ -86,7 +79,7 @@
 
 (defn -main [& args]
   (let [path (first args)
-        parsed-commands (read-input path)]
+        parsed-commands (read-input-lines parse-lights-command path)]
     (println "Parsed input at path " path)
     (println "Found total commands: " (count parsed-commands))
     (println "Day01 turned on lights: " (count-on (apply-commands apply-command-day01 (off-grid 1000 1000) parsed-commands)))
