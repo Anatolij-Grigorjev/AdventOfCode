@@ -25,7 +25,7 @@
          path-edges []]
     (let [node-edges (ug/find-edges g {:src start-node})
           forward-edges (filter #((partial node-in-subset remaining-nodes) (ug/dest %)) node-edges)
-          shortest-edge (first (reverse (sort-by #(ug/weight g %) forward-edges)))]
+          shortest-edge (first (sort-by #(ug/weight g %) forward-edges))]
       (if (empty? forward-edges)
         path-edges
         (do
