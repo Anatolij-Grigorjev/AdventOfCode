@@ -4,6 +4,35 @@
   (:require [ubergraph.core :as ug]))
 
 
+; all permutations of col, taken from https://stackoverflow.com/a/26076537
+(defn permutations [colls]
+  (if (= 1 (count colls))
+    (list colls)
+    (for [head colls
+          tail (permutations (disj (set colls) head))]
+      (cons head tail))))
+
+(defn items-pairs [col]
+  (loop [items col
+         accum []]
+    (let [l (first items)
+          r (second items)]
+      (if (nil? r)
+        accum
+        (recur (rest items) (conj accum [l r]))))))
+
+(defn segment-length [g node1 node2]
+  (ug/weight g (first (ug/find-edges g node1 node2))))
+
+(defn total-path-length [g nodes]
+  (let [segment-lengths (map #(segment-length g (first %) (second %)) (items-pairs nodes))]
+    (reduce + segment-lengths)))
+
+(defn all-paths [g]
+  (let [node-lists (permutations (ug/nodes g))]
+    (map #(vector % (total-path-length g %)) node-lists)))
+
+
 (defn parse-distances [line]
   (let [city-from-and-rest (str/split line #" to " 2)
         city-from (first city-from-and-rest)
@@ -17,6 +46,7 @@
 
 (defn edge->str [g edge]
   (str "-" (ug/weight g edge) "->" (ug/dest edge)))
+
 
 
 (defn shortest-edges [g start]
@@ -46,4 +76,7 @@
                     (println "shortest path from: " path-start (map (partial edge->str input-graph) shortest-path))
                     (println "total shortest path: " (reduce + (map #(ug/weight input-graph %) shortest-path)))
                     (println))
-                  shortest-paths-map)))))
+                  shortest-paths-map)))
+    (let [all-paths-map (all-paths input-graph)
+          longest-path (first (reverse (sort-by second all-paths-map)))]
+      (println "longest path is: " (first longest-path) " -> " (second longest-path)))))
