@@ -1,6 +1,14 @@
 (ns aoc-commons.core
   (:require [clojure.java.io :as io]))
 
+; all permutations of col, taken from https://stackoverflow.com/a/26076537
+(defn permutations [colls]
+  (if (= 1 (count colls))
+    (list colls)
+    (for [head colls
+          tail (permutations (disj (set colls) head))]
+      (cons head tail))))
+
 (defn read-input-lines [transform-f path]
   (with-open [reader (io/reader path)]
     (doall (map transform-f (line-seq reader)))))

@@ -3,29 +3,11 @@
   (:require [clojure.string :as str])
   (:require [ubergraph.core :as ug]))
 
-
-; all permutations of col, taken from https://stackoverflow.com/a/26076537
-(defn permutations [colls]
-  (if (= 1 (count colls))
-    (list colls)
-    (for [head colls
-          tail (permutations (disj (set colls) head))]
-      (cons head tail))))
-
-(defn items-pairs [col]
-  (loop [items col
-         accum []]
-    (let [l (first items)
-          r (second items)]
-      (if (nil? r)
-        accum
-        (recur (rest items) (conj accum [l r]))))))
-
 (defn segment-length [g node1 node2]
   (ug/weight g (first (ug/find-edges g node1 node2))))
 
 (defn total-path-length [g nodes]
-  (let [segment-lengths (map #(segment-length g (first %) (second %)) (items-pairs nodes))]
+  (let [segment-lengths (map #(segment-length g (first %) (second %)) (partition 2 1 nodes))]
     (reduce + segment-lengths)))
 
 (defn all-paths [g]
