@@ -9,6 +9,9 @@
           tail (permutations (disj (set colls) head))]
       (cons head tail))))
 
+(defn max-by [f col]
+  (first (reverse (sort-by f col))))
+
 (defn read-input-lines [transform-f path]
   (with-open [reader (io/reader path)]
     (doall (map transform-f (line-seq reader)))))

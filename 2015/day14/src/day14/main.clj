@@ -25,6 +25,27 @@
 (defn deer-path-str [[deer-name distance]]
   (str distance "->" deer-name))
 
+(defn deer-timetable [to-seconds deer]
+  (map #(deer-after % deer) (range to-seconds)))
+
+(defn leading-at-second [timetable s]
+  (let [distances-at-s (map (fn [[deer-name times]]
+                              [deer-name (nth times s)]) timetable)
+        max-value (max-by second distances-at-s)
+        leading-times (filter #(= (second max-value) (second %)) distances-at-s)]
+    (println "score snapshot" distances-at-s)
+    (println "second" s "max" max-value)
+    (println "leaders" leading-times)
+    (map first leading-times)))
+
+(defn deer-timetables [deer-list to-seconds]
+  (zipmap (map :name deer-list) (map (partial deer-timetable to-seconds) deer-list)))
+
+(defn deer-day2-points [deer-list to-seconds]
+  (let [timetables (deer-timetables deer-list to-seconds)
+        leaders-lists (map (partial leading-at-second timetables) (range 1 to-seconds))]
+    (frequencies (flatten leaders-lists))))
+
 (defn -main [& args]
   (let [path (first args)
         race-length 2503
@@ -34,4 +55,7 @@
     (let [travel-distances (zipmap (map :name deers-list) (map (partial deer-after race-length) deers-list))
           best-deer (first (reverse (sort-by second travel-distances)))]
       (doall (map (comp println deer-path-str) travel-distances))
-      (println "Best boy:" (deer-path-str best-deer)))))
+      (println "Best boy:" (deer-path-str best-deer)))
+    (let [day2-points (deer-day2-points deers-list race-length)]
+      (println "Day02 breakdowns:" day2-points)
+      (println "Most leading boy:" (max-by second day2-points)))))

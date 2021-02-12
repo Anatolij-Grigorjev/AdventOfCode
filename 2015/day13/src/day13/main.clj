@@ -44,9 +44,6 @@
   (let [node-lists (permutations (ug/nodes g))]
     (map #(vector % (total-path-length g %)) node-lists)))
 
-(defn max-by [f col]
-  (first (reverse (sort-by f col))))
-
 (defn path->str [path-pair]
   (let [nodes (first path-pair)
         ring-nodes (conj (apply vector nodes) (first nodes))]
