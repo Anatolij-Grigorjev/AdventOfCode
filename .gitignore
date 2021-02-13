@@ -19,3 +19,7 @@ checkouts/
 .calva/
 .clj-kondo/
 .lsp/
+#dump files
+*.dmp
+javacore*.txt
+*.trc
