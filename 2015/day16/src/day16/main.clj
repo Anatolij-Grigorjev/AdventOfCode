@@ -11,9 +11,16 @@
                   :trees 3
                   :cars 2
                   :perfumes 1})
+(def aunt-prop-names (keys etalon-aunt))
+(def empty-aunt (zipmap aunt-prop-names (repeat (count aunt-prop-names) nil)))
+
+(defn parse-aunt-props [line-props-part]
+  (into empty-aunt (for [[_ prop amount] (re-seq #"(\w+): (\d+)" line-props-part)]
+                     [(keyword prop) (parse-int amount)])))
 
 (defn parse-aunt [line]
-  )
+  (for [[_ aunt-name props-line] (re-seq #"(\w+\s\w+): (.*)" line)]
+    [aunt-name (parse-aunt-props props-line)]))
 
 (defn -main [& args]
   (let [path (first args)
