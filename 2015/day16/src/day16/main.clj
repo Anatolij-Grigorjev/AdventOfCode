@@ -19,15 +19,21 @@
                      [(keyword prop) (parse-int amount)])))
 
 (defn parse-aunt [line]
-  (let [[_ aunt-name props-line] (re-seq #"(\w+\s\w+): (.*)" line)]
+  (let [[[_ aunt-name props-line]] (re-seq #"(\w+\s\w+): (.*)" line)]
     [aunt-name (parse-aunt-props props-line)]))
 
 (defn aunt-props [aunt]
   (second aunt))
 
 (defn key-etalon-or-nil [aunt key]
-  (let [value (key (aunt-props aunt))]
-    (or (nil? value) (= value (key etalon-aunt-props)))))
+  (let [value (key (aunt-props aunt))
+        etalon-value (key etalon-aunt-props)]
+    (if (nil? value)
+      true
+      (case key
+        (:cats :trees) (> value etalon-value)
+        (:pomeranians :goldfish) (< value etalon-value)
+        (= value etalon-value)))))
 
 (defn filter-aunts-key [all-aunts key]
   (filter #(key-etalon-or-nil % key) all-aunts))
@@ -35,6 +41,5 @@
 (defn -main [& args]
   (let [path (first args)
         aunts-partial-info (read-input-lines parse-aunt path)]
-    (println aunts-partial-info)
     (let [filtered-aunts (reduce filter-aunts-key aunts-partial-info aunt-prop-names)]
-      (println "questionable aunts" (count filtered-aunts)))))
+      (println "questionable aunts" filtered-aunts))))
