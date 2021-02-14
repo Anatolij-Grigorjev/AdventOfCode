@@ -14,7 +14,7 @@
 
 (defn read-input-lines [transform-f path]
   (with-open [reader (io/reader path)]
-    (doall (map transform-f (line-seq reader)))))
+    (into [] (map transform-f (line-seq reader)))))
 
 (defn find-first [f col]
   (first (drop-while (complement f) col)))
